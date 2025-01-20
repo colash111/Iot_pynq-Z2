@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Control de LEDs y Sensor de Proximidad</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f7fc;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+
+        h1 {
+            color: #2e3a59;
+            font-size: 36px;
+            margin-bottom: 20px;
+        }
+
+        .content {
+            width: 100%;
+            max-width: 800px;
+            padding: 20px;
+            background-color: #ffffff;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+        }
+
+        .led-controls {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 15px 25px;
+            font-size: 18px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            width: 180px;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        .status-section {
+            margin-top: 30px;
+            padding: 20px;
+            background-color: #e9f0f7;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .status-section h2 {
+            font-size: 24px;
+            color: #2e3a59;
+        }
+
+        .status-text {
+            font-size: 18px;
+            margin-top: 10px;
+            color: #333;
+        }
+
+        #monitor-info, #proximity-info {
+            font-size: 18px;
+            color: #555;
+            white-space: pre-wrap;
+        }
+
+        .led-state {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+        }
+
+        .led-state span {
+            font-size: 18px;
+        }
+    </style>
+    <!-- Incluir JQuery para facilitar AJAX -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        // Función para alternar entre encender y apagar el LED
+        function toggleLed(ledId) {
+            $.ajax({
+                url: '/toggle_led',
+                type: 'POST',
+                data: JSON.stringify({ 'led_id': ledId }),
+                contentType: 'application/json',
+                success: function(response) {
+                    $('#' + response.ledId + '-state').text(response.ledState);
+                    getMonitorInfo();
+                },
+                error: function() {
+                    $('#led-status').text('Error al cambiar el estado del LED');
+                }
+            });
+        }
+
+        // Función para obtener y mostrar la información de monitorización
+        function getMonitorInfo() {
+            $.ajax({
+                url: '/monitor',
+                type: 'GET',
+                success: function(response) {
+                    $('#monitor-info').text(response);
+                },
+                error: function() {
+                    $('#monitor-info').text('Error al obtener información de monitorización');
+                }
+            });
+        }
+
+        // Función para obtener el estado del sensor de proximidad
+        function getProximityInfo() {
+            $.ajax({
+                url: '/proximity',
+                type: 'GET',
+                success: function(response) {
+                    $('#proximity-info').text(response.sensorState); // Actualiza el estado del sensor en la interfaz
+                },
+                error: function() {
+                    $('#proximity-info').text('Error al obtener información del sensor de proximidad');
+                }
+            });
+        }
+
+
+
+        // Llamada a getMonitorInfo, getProximityInfo cuando la página carga
+        $(document).ready(function() {
+            getMonitorInfo();
+            getProximityInfo();  // Llamada a la función para obtener el estado del sensor de proximidad
+        });
+    </script>
+</head>
+<body>
+    <div class="content">
+        <h1>Control de LEDs y Sensor de Proximidad</h1>
+        <p>Haz clic en los botones para alternar el estado de los LEDs:</p>
+        <div class="led-controls">
+            <button onclick="toggleLed(0)">LED 0</button>
+            <button onclick="toggleLed(1)">LED 1</button>
+            <button onclick="toggleLed(2)">LED 2</button>
+            <button onclick="toggleLed(3)">LED 3</button>
+        </div>
+
+        <div class="status-section">
+            <h2>Estado de los LEDs</h2>
+            <div class="led-state">
+                <span>LED 0</span>
+                <span id="led0-state">On</span>
+            </div>
+            <div class="led-state">
+                <span>LED 1</span>
+                <span id="led1-state">On</span>
+            </div>
+            <div class="led-state">
+                <span>LED 2</span>
+                <span id="led2-state">On</span>
+            </div>
+            <div class="led-state">
+                <span>LED 3</span>
+                <span id="led3-state">On</span>
+            </div>
+        </div>
+
+        <div class="status-section">
+            <h2>Información de Monitorización</h2>
+            <div id="monitor-info" class="status-text"></div>
+        </div>
+
+        <div class="status-section">
+            <h2>Estado del Sensor de Proximidad</h2>
+            <div id="proximity-info" class="status-text"></div>
+        </div>
+    </div>
+</body>
+</html>
